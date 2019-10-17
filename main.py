@@ -16,7 +16,7 @@ from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.datasets import load_iris
-import dataCollector as data
+import dataCollector as dCollector
 
 import pandas as pd
 import numpy as np
@@ -28,7 +28,7 @@ random.seed(30)
 
 #Begin of Tony Edit
 if __name__ == "__main__":
-    file = "loan_final313_edited_out_categories.csv"
+    file = "data.csv"
     data_df = pd.read_csv(file, delimiter=",")
 
       # Declaring the encoders
