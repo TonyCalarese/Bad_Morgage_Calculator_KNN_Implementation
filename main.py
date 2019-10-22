@@ -29,6 +29,8 @@ from sklearn.datasets import load_iris
 
 #loans = loans.drop(['id', 'issue_d', 'final_d', 'home_ownership', 'application_type', 'income_category', 'purpose',
 #                    'interest_payments', 'loan_condition', 'grade', 'term'], axis=1)
+#y = loans['loan_condition_cat']
+#loans = loans.drop(['loans_condition_cat'])
 #loans = loans.replace('munster', 0)
 #loans = loans.replace('leinster', 1)
 #loans = loans.replace('cannught', 2)
@@ -46,7 +48,8 @@ class Loans:
         data_df = pd.read_csv(file)
         self.y = y_encoder.fit_transform(data_df[y_delimiter])
         self.X = pd.DataFrame()
-        self.k = 1 #Default k to 1
+        self.k = 3 #Default k to 3
+        self.testSize = 0.3
         #Loading X and y
         NewData = data_df.loc[:, data_df.columns != y_delimiter]
         for col in NewData.columns: # If the column attributes are objects then append the encoded version of those Otherwise append the data
@@ -54,19 +57,29 @@ class Loans:
 
         #Memory Clean up
         del data_df, X_encoder, y_encoder, y_delimiter, NewData
+
+    #Function to set k, default is 3
     def setK(self, k):
         self.k = k
+    #Function to set TestSize if you would like to, default is 70% 30%
+    def setTestSize(self, testSize):
+        self.testSize = testSize
+
+    def showKeys(self):
+        print(self.X.keys())
+
     #Running the sklearn KNN
     def sklearnKNN(self):
+        X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, stratify=self.y, test_size=self.testSize, random_state=21)
         knn = KNeighborsClassifier(n_neighbors=self.k)
         knn.fit(X_train, y_train)
         y_pred = knn.predict(X_test)
-        knn.score(X_test, y_test)
+        print(knn.score(X_test, y_test))
 
 
     #This will take a list of variables that will be used to filter out of X
     def filterOut(self, columns):
-        self.X.drop(columns, axis=1)
+        self.X.drop(columns, inplace=True, axis=1)
 
     #Function for showing what X and y are
     def showAll(self):
@@ -77,10 +90,15 @@ class Loans:
 #Tony Begin
 #Main Function
 if __name__== "__main__":
-    loan1 = Loans(file='loan_final313.csv', y_delimiter='id')
+    loan1 = Loans(file='loan_final313.csv', y_delimiter='loan_condition_cat')
+    #loan1.showKeys()
+    #Lyall
     loan1.filterOut(['issue_d', 'final_d', 'home_ownership', 'application_type',
-                     'income_category', 'purpose', 'interest_payments', 'loan_condition',
-                     'grade', 'term'])
-    loan1.showAll()
+                     'income_category', 'purpose', 'interest_payments', 'grade', 'term', 'id',
+                     'loan_condition'])
+    #Tony
+    #loan1.showAll()
+    loan1.setK(3)
+    loan1.sklearnKNN()
 
 #Tony End
