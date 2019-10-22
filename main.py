@@ -54,6 +54,14 @@ class Loans:
 
         #Memory Clean up
         del data_df, X_encoder, y_encoder, y_delimiter, NewData
+    def setK(self, k):
+        self.k = k
+    #Running the sklearn KNN
+    def sklearnKNN(self):
+        knn = KNeighborsClassifier(n_neighbors=self.k)
+        knn.fit(X_train, y_train)
+        y_pred = knn.predict(X_test)
+        knn.score(X_test, y_test)
 
 
     #This will take a list of variables that will be used to filter out of X
@@ -70,7 +78,9 @@ class Loans:
 #Main Function
 if __name__== "__main__":
     loan1 = Loans(file='loan_final313.csv', y_delimiter='id')
-    loan1.filterOut(['issue_d', 'final_d', 'home_ownership', 'application_type', 'income_category', 'purpose', 'interest_payments', 'loan_condition', 'grade', 'term'])
+    loan1.filterOut(['issue_d', 'final_d', 'home_ownership', 'application_type',
+                     'income_category', 'purpose', 'interest_payments', 'loan_condition',
+                     'grade', 'term'])
     loan1.showAll()
 
 #Tony End
