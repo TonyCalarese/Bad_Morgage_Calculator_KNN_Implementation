@@ -25,7 +25,7 @@ class Loans:
     #Initialize with the file name and the column that y will be,
     def __init__(self, file, y_delimiter):
         enc = preprocessing.LabelEncoder() #Declaring the Encoder #Tony
-        data_df = pd.read_csv(file) #All Data #Tony
+        data_df = pd.read_csv(file, error_bad_lines=False) #Tony #Source of reference for errors:https://stackoverflow.com/questions/18039057/python-pandas-error-tokenizing-data
 
         self.y = enc.fit_transform(data_df[y_delimiter]) #Tony
         self.X = pd.DataFrame() #Tony
