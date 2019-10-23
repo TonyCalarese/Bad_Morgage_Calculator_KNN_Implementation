@@ -13,87 +13,99 @@ import pandas as pd
 import numpy as np
 import random
 random.seed(30)
-
 # Label Encoder Source
 # https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
-import sklearn
+from sklearn import metrics
 from sklearn import preprocessing
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.datasets import load_iris
-
-
-# Lyall
-#loans = pd.read_csv('loan_final313.csv')
-#print(loans.head())
-
-#loans = loans.drop(['id', 'issue_d', 'final_d', 'home_ownership', 'application_type', 'income_category', 'purpose',
-#                    'interest_payments', 'loan_condition', 'grade', 'term'], axis=1)
-#y = loans['loan_condition_cat']
-#loans = loans.drop(['loans_condition_cat'])
-#loans = loans.replace('munster', 0)
-#loans = loans.replace('leinster', 1)
-#loans = loans.replace('cannught', 2)
-#loans = loans.replace('ulster', 3)
-#print(loans['region'])
-# Lyall
-
+from sklearn.tree import DecisionTreeClassifier
 
 class Loans:
     #Initialize with the file name and the column that y will be,
     def __init__(self, file, y_delimiter):
-        # Declaring the encoders
-        X_encoder = preprocessing.LabelEncoder()
-        y_encoder = preprocessing.LabelEncoder()
-        data_df = pd.read_csv(file)
-        self.y = y_encoder.fit_transform(data_df[y_delimiter])
-        self.X = pd.DataFrame()
-        self.k = 3 #Default k to 3
-        self.testSize = 0.3
-        #Loading X and y
-        NewData = data_df.loc[:, data_df.columns != y_delimiter]
-        for col in NewData.columns: # If the column attributes are objects then append the encoded version of those Otherwise append the data
-            self.X[col] = X_encoder.fit_transform(NewData[col]) if NewData[col].dtype == 'O' else NewData[col]
+        enc = preprocessing.LabelEncoder() #Declaring the Encoder #Tony
+        data_df = pd.read_csv(file) #All Data #Tony
 
-        del data_df, X_encoder, y_encoder, y_delimiter, NewData #Memory Clean up Tony
+        self.y = enc.fit_transform(data_df[y_delimiter]) #Tony
+        self.X = pd.DataFrame() #Tony
+        self.k = 3          #Default k to 3 #Tony
+
+
+        #Loading X and y
+        NewData = data_df.loc[:, data_df.columns != y_delimiter] #Tony
+        for col in NewData.columns: # If the column attributes are objects then append the encoded version of those Otherwise append the data
+            self.X[col] = enc.fit_transform(NewData[col]) if NewData[col].dtype == 'O' else NewData[col] #Tony
+
+        del data_df, enc, y_delimiter, NewData #Memory Clean up #Tony
+
+        #Creating the Train and Test Data
+        self.X_train = pd.DataFrame() #Tony
+        self.X_test = pd.DataFrame() #Tony
+        self.y_train = []  #Tony
+        self.y_test = []    #Tony
+
+        #Predictions
+        self.y_pred_knn = []    #Tony
+        self.y_pred_tree = []
+
+        #Accuracies -- Default to 0 of not run
+        self.accuracy_dict = {} #Tony
+
 
     #Function to set k, default is 3
     def setK(self, k):
         self.k = k #Tony
-
-    #Function to set TestSize if you would like to, default is 70% 30%
-    def setTestSize(self, testSize):
-        self.testSize = testSize #Tony
-
-    #Running the sklearn KNN
-    def sklearnKNN(self):
-        X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, stratify=self.y, test_size=self.testSize, random_state=21) #Tony and John
-        knn = KNeighborsClassifier(n_neighbors=self.k) #Tony
-        knn.fit(X_train, y_train) #Tony
-        y_pred = knn.predict(X_test) #Tony
-        print(knn.score(X_test, y_test)) #Tony
 
 
     #This will take a list of variables that will be used to filter out of X
     def filterOut(self, columns):
         self.X.drop(columns, inplace=True, axis=1) #Lyall
 
-    #Function for showing what X and y are
-    def showAll(self):
-        print(self.X) #Tony
-        print(self.y) #Tony
+    def test_train_split(self):
+        #Creating the Train and Test Data
+        X_train, X_test, y_train, y_test = train_test_split(self.X, self.y, stratify=self.y, test_size=0.3) #Tony and John
+        self.X_train = X_train #Tony
+        self.X_test = X_test #Tony
+        self.y_train = y_train #Tony
+        self.y_test = y_test    #Tony
 
+        del X_train, X_test, y_train, y_test #Memory Clean up for speed #Tony
+    #Running the sklearn KNN
+    def sklearnKNN(self):
+        knn = KNeighborsClassifier(n_neighbors=self.k) #Tony
+        knn.fit(self.X_train, self.y_train) #Tony
+        self.y_pred_knn = knn.predict(self.X_test) #Tony
+        self.accuracy_dict["SKLEARN_KNN"] = metrics.accuracy_score(self.y_test, self.y_pred_knn) #Lyall
+
+
+    #Running the Descision Tree Variant
+    def DescisionTree(self):
+        clf = DecisionTreeClassifier(max_depth=4, random_state=0) #Lyall and John
+        clf.fit(self.X_train, self.y_train) #Lyall and John
+        self.y_pred_tree = clf.predict(self.X_test) #Lyall and John
+        self.accuracy_dict["Tree"] = metrics.accuracy_score(self.y_test, self.y_pred_tree) #Lyall
+
+    #Function for showinghow much the predicted data relates to the answer key
+    def showAll(self):
+        print("Answer Key: ", self.y_test[:20]) #Tony
+        print("Y_Pred_KNN", self.y_pred_knn[:20]) #Tony
+        print("Y_Pred_Descision_Tree", self.y_pred_tree[:20]) #Tony
+        print(self.accuracy_dict.items())
+
+
+#Tony
 #Main Function
 if __name__== "__main__":
-    #Tony
-    loan1 = Loans(file='loan_final313.csv', y_delimiter='loan_condition_cat')
-
+    loan1 = Loans(file='loan_final313.csv', y_delimiter='loan_condition_cat') #Tony
     #Lyall
     loan1.filterOut(['issue_d', 'final_d', 'home_ownership', 'application_type',
                      'income_category', 'purpose', 'interest_payments', 'grade', 'term', 'id',
                      'loan_condition'])
-    #Tony
-    #loan1.showAll()
+    loan1.test_train_split() #After Dropping Data Split it up #Lyall and Tony
     loan1.setK(3) #Tony
     loan1.sklearnKNN() #Tony
+    loan1.DescisionTree() #John and Lyall
+    loan1.showAll() #Tony
+
 
