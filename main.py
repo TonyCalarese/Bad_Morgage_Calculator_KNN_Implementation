@@ -30,7 +30,7 @@ class Loans:
         self.y = enc.fit_transform(data_df[y_delimiter]) #Tony
         self.X = pd.DataFrame() #Tony
         self.k = 3          #Default k to 3 #Tony
-
+        self.depth = 3      #Tony
 
         #Loading X and y
         NewData = data_df.loc[:, data_df.columns != y_delimiter] #Tony
@@ -56,8 +56,11 @@ class Loans:
     #Function to set k, default is 3
     def setK(self, k):
         self.k = k #Tony
+        del k #Tony
 
-
+    def setMaxDepth(self, depth):
+        self.depth = depth
+        del depth #Tony
     #This will take a list of variables that will be used to filter out of X
     def filterOut(self, columns):
         self.X.drop(columns, inplace=True, axis=1) #Lyall
@@ -81,7 +84,7 @@ class Loans:
 
     #Running the Descision Tree Variant
     def DescisionTree(self):
-        clf = DecisionTreeClassifier(max_depth=4, random_state=0) #Lyall and John
+        clf = DecisionTreeClassifier(max_depth=self.depth, random_state=0) #Lyall and John and Tony
         clf.fit(self.X_train, self.y_train) #Lyall and John
         self.y_pred_tree = clf.predict(self.X_test) #Lyall and John
         self.accuracy_dict["Tree"] = metrics.accuracy_score(self.y_test, self.y_pred_tree) #Lyall
@@ -91,7 +94,7 @@ class Loans:
         print("Answer Key: ", self.y_test[:20]) #Tony
         print("Y_Pred_KNN", self.y_pred_knn[:20]) #Tony
         print("Y_Pred_Descision_Tree", self.y_pred_tree[:20]) #Tony
-        print(self.accuracy_dict.items())
+        print(self.accuracy_dict.items()) #Tony
 
 
 #Tony
@@ -105,6 +108,7 @@ if __name__== "__main__":
     loan1.test_train_split() #After Dropping Data Split it up #Lyall and Tony
     loan1.setK(3) #Tony
     loan1.sklearnKNN() #Tony
+    loan1.setMaxDepth(4)
     loan1.DescisionTree() #John and Lyall
     loan1.showAll() #Tony
 
